@@ -7,17 +7,22 @@ from telegram.ext import (
 )
 from datetime import timedelta
 
-TOKEN = os.getenv('BOT_TOKEN')
+# اطلاعات ربات
+TOKEN = '7413532622:AAGSQfFH2qtSPfRKFM-XTsIYYyVBhVOIPII'
 CHANNEL_USERNAME = '@hottof'
-ADMINS = [7827493126, 6387942633, 5459406429, 7189616405]
+ADMINS = [6378124502, 6387942633, 5459406429, 7189616405]
 
+# مراحل گفتگو
 WAITING_FOR_MEDIA, WAITING_FOR_CAPTION, WAITING_FOR_ACTION, WAITING_FOR_SCHEDULE = range(4)
 
+# لاگ
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(name)
 
+# تعریف ربات
 application = Application.builder().token(TOKEN).build()
 
+# دستورات ربات
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id not in ADMINS:
         await update.message.reply_text('شما دسترسی به این ربات ندارید.')
@@ -69,7 +74,7 @@ async def handle_action(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
 
     if text == 'ارسال در کانال':
-        await send_to_channel(context.user_data, context.bot)
+        await send_to_channel(context)
         await update.message.reply_text('پیام ارسال شد. لطفاً مدیا بعدی را بفرستید.', reply_markup=ReplyKeyboardRemove())
         return WAITING_FOR_MEDIA
     elif text == 'ارسال در آینده':
@@ -92,24 +97,33 @@ async def handle_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text('فقط عدد وارد کنید.')
         return WAITING_FOR_SCHEDULE
 
-async def send_to_channel(data, bot):
+async def send_to_channel(context: ContextTypes.DEFAULT_TYPE):
+    data = context.user_data
+    media_type = data['media_type']
+    file_id = data['file_id']
+    caption = data['caption']
+    if media_type == 'photo':
+        await context.bot.send_photo(chat_id=CHANNEL_USERNAME, photo=file_id, caption=caption)
+    elif media_type == 'video':
+        await context.bot.send_video(chat_id=CHANNEL_USERNAME, video=file_id, caption=caption)
+
+async def send_scheduled(context: CallbackContext):
+    data = context.job.data
     media_type = data['media_type']
     file_id = data['file_id']
     caption = data['caption']
 
+    bot = context.bot
     if media_type == 'photo':
         await bot.send_photo(chat_id=CHANNEL_USERNAME, photo=file_id, caption=caption)
     elif media_type == 'video':
         await bot.send_video(chat_id=CHANNEL_USERNAME, video=file_id, caption=caption)
 
-async def send_scheduled(context: CallbackContext):
-    data = context.job.data
-    await send_to_channel(data, context.bot)
-
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text('لغو شد.', reply_markup=ReplyKeyboardRemove())
     return ConversationHandler.END
 
+# اجرای اصلی
 def main():
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start)],
@@ -124,13 +138,13 @@ def main():
 
     application.add_handler(conv_handler)
 
-    WEBHOOK_URL = 'https://final-4oxs.onrender.com'
+    WEBHOOK_URL = 'https://ooooo-fiwm.onrender.com/'  # اصلاح شده
 
     application.run_webhook(
         listen="0.0.0.0",
-        port=int(os.environ.get("PORT", 8080)),
+        port=int(os.environ.get("PORT", 8080)),  # اصلاح شده
         webhook_url=WEBHOOK_URL
     )
 
-if __name__ == '__main__':
+if name == 'main':
     main()
