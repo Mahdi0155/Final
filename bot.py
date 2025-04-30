@@ -11,7 +11,7 @@ from aiohttp import web
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-TOKEN = os.getenv('7413532622:AAH2nxwTR8aaGxsZT27JZohVW_IEg_EbXmI')
+TOKEN = os.getenv('BOT_TOKEN')
 CHANNEL_USERNAME = '@hottof'
 ADMINS = [7827493126, 6387942633, 5459406429, 7189616405]
 
