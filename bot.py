@@ -1,4 +1,3 @@
-
 import os
 import logging
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
@@ -18,7 +17,7 @@ WAITING_FOR_MEDIA, WAITING_FOR_CAPTION, WAITING_FOR_ACTION, WAITING_FOR_SCHEDULE
 
 # لاگ
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(name)
+logger = logging.getLogger(__name__)
 
 # تعریف ربات
 application = Application.builder().token(TOKEN).build()
@@ -104,7 +103,7 @@ async def send_to_channel(context: ContextTypes.DEFAULT_TYPE):
     file_id = data['file_id']
     caption = data['caption']
 
-if media_type == 'photo':
+    if media_type == 'photo':
         await context.bot.send_photo(chat_id=CHANNEL_USERNAME, photo=file_id, caption=caption)
     elif media_type == 'video':
         await context.bot.send_video(chat_id=CHANNEL_USERNAME, video=file_id, caption=caption)
@@ -140,13 +139,13 @@ def main():
 
     application.add_handler(conv_handler)
 
-    WEBHOOK_URL = 'https://ooooo-fiwm.onrender.com/'  # اصلاح شده
+    WEBHOOK_URL = 'https://ooooo-fiwm.onrender.com/'  # آدرس ربات در Render
 
     application.run_webhook(
         listen="0.0.0.0",
-        port=int(os.environ.get("PORT", 8080)),  # اصلاح شده
+        port=int(os.environ.get("PORT", 8080)),
         webhook_url=WEBHOOK_URL
     )
 
-if name == 'main':
+if __name__ == '__main__':
     main()
