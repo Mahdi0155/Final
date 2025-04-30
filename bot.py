@@ -1,3 +1,4 @@
+logger.info("Bot is starting...")
 import logging
 import os
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
