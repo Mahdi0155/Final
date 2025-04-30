@@ -146,5 +146,5 @@ def main():
         webhook_url=WEBHOOK_URL
     )
 
-if name == 'main':
-    main()
+logger = logging.getLogger(__name__)
+if __name__ == '__main__':
