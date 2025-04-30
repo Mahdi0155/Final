@@ -1,5 +1,6 @@
 import os
 import logging
+import asyncio
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import (
     Application, CommandHandler, MessageHandler, filters,
@@ -8,14 +9,17 @@ from telegram.ext import (
 from datetime import timedelta
 from aiohttp import web
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-TOKEN = os.getenv('BOT_TOKEN')
+# اطلاعات ربات
+TOKEN = os.getenv('BOT_TOKEN')  # امنیت بیشتر
 CHANNEL_USERNAME = '@hottof'
 ADMINS = [7827493126, 6387942633, 5459406429, 7189616405]
 
+# مراحل گفتگو
 WAITING_FOR_MEDIA, WAITING_FOR_CAPTION, WAITING_FOR_ACTION, WAITING_FOR_SCHEDULE = range(4)
+
+# لاگ
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 application = Application.builder().token(TOKEN).build()
 
@@ -30,21 +34,20 @@ async def handle_media(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id not in ADMINS:
         return ConversationHandler.END
 
-    message = update.message
-    if message.photo:
-        file_id = message.photo[-1].file_id
+    if update.message.photo:
+        file_id = update.message.photo[-1].file_id
         media_type = 'photo'
-    elif message.video:
-        file_id = message.video.file_id
+    elif update.message.video:
+        file_id = update.message.video.file_id
         media_type = 'video'
     else:
-        await message.reply_text('فقط عکس یا ویدیو قابل قبول است.')
+        await update.message.reply_text('فقط عکس یا ویدیو قابل قبول است.')
         return WAITING_FOR_MEDIA
 
     context.user_data['file_id'] = file_id
     context.user_data['media_type'] = media_type
 
-    await message.reply_text('لطفاً کپشن مورد نظر خود را بنویسید:')
+    await update.message.reply_text('لطفاً کپشن مورد نظر خود را بنویسید:')
     return WAITING_FOR_CAPTION
 
 async def handle_caption(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -120,10 +123,12 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text('لغو شد.', reply_markup=ReplyKeyboardRemove())
     return ConversationHandler.END
 
+# هندلر پینگ
 async def ping_handler(request):
     return web.Response(text="I'm alive!")
 
-def main():
+# تابع اصلی با aiohttp
+async def main():
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start)],
         states={
@@ -136,15 +141,22 @@ def main():
     )
 
     application.add_handler(conv_handler)
-    application.web_app.router.add_get("/", ping_handler)
 
-    WEBHOOK_URL = 'https://final-4oxs.onrender.com'
+    # aiohttp server
+    aio_app = web.Application()
+    aio_app.router.add_get("/", ping_handler)
 
-    application.run_webhook(
+    runner = web.AppRunner(aio_app)
+    await runner.setup()
+    site = web.TCPSite(runner, "0.0.0.0", int(os.environ.get("PORT", 8080)))
+    await site.start()
+
+    # Start Telegram webhook
+    await application.run_webhook(
         listen="0.0.0.0",
-        port=int(os.environ.get("PORT", 8080)),
-        webhook_url=WEBHOOK_URL
+        port=8443,
+        webhook_url='https://final-4oxs.onrender.com'
     )
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())
