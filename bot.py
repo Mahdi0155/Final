@@ -1,23 +1,18 @@
 import os
 import logging
-import asyncio
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import (
     Application, CommandHandler, MessageHandler, filters,
     ContextTypes, ConversationHandler, CallbackContext
 )
 from datetime import timedelta
-from aiohttp import web
 
-# اطلاعات ربات
-TOKEN = os.getenv('BOT_TOKEN')  # امنیت بیشتر
+TOKEN = os.getenv('BOT_TOKEN')
 CHANNEL_USERNAME = '@hottof'
 ADMINS = [7827493126, 6387942633, 5459406429, 7189616405]
 
-# مراحل گفتگو
 WAITING_FOR_MEDIA, WAITING_FOR_CAPTION, WAITING_FOR_ACTION, WAITING_FOR_SCHEDULE = range(4)
 
-# لاگ
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -109,26 +104,13 @@ async def send_to_channel(data, bot):
 
 async def send_scheduled(context: CallbackContext):
     data = context.job.data
-    media_type = data['media_type']
-    file_id = data['file_id']
-    caption = data['caption']
-
-    bot = context.bot
-    if media_type == 'photo':
-        await bot.send_photo(chat_id=CHANNEL_USERNAME, photo=file_id, caption=caption)
-    elif media_type == 'video':
-        await bot.send_video(chat_id=CHANNEL_USERNAME, video=file_id, caption=caption)
+    await send_to_channel(data, context.bot)
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text('لغو شد.', reply_markup=ReplyKeyboardRemove())
     return ConversationHandler.END
 
-# هندلر پینگ
-async def ping_handler(request):
-    return web.Response(text="I'm alive!")
-
-# تابع اصلی با aiohttp
-async def main():
+def main():
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start)],
         states={
@@ -142,21 +124,13 @@ async def main():
 
     application.add_handler(conv_handler)
 
-    # aiohttp server
-    aio_app = web.Application()
-    aio_app.router.add_get("/", ping_handler)
+    WEBHOOK_URL = 'https://final-4oxs.onrender.com'
 
-    runner = web.AppRunner(aio_app)
-    await runner.setup()
-    site = web.TCPSite(runner, "0.0.0.0", int(os.environ.get("PORT", 8080)))
-    await site.start()
-
-    # Start Telegram webhook
-    await application.run_webhook(
+    application.run_webhook(
         listen="0.0.0.0",
-        port=8443,
-        webhook_url='https://final-4oxs.onrender.com'
+        port=int(os.environ.get("PORT", 8080)),
+        webhook_url=WEBHOOK_URL
     )
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    main()
