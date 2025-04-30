@@ -8,17 +8,14 @@ from telegram.ext import (
 from datetime import timedelta
 from aiohttp import web
 
-# اطلاعات ربات
-TOKEN = os.getenv('BOT_TOKEN', '7413532622:AAH2nxwTR8aaGxsZT27JZohVW_IEg_EbXmI')  # امنیت بیشتر
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+TOKEN = os.getenv('7413532622:AAH2nxwTR8aaGxsZT27JZohVW_IEg_EbXmI')
 CHANNEL_USERNAME = '@hottof'
 ADMINS = [7827493126, 6387942633, 5459406429, 7189616405]
 
-# مراحل گفتگو
 WAITING_FOR_MEDIA, WAITING_FOR_CAPTION, WAITING_FOR_ACTION, WAITING_FOR_SCHEDULE = range(4)
-
-# لاگ
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 application = Application.builder().token(TOKEN).build()
 
@@ -33,20 +30,21 @@ async def handle_media(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id not in ADMINS:
         return ConversationHandler.END
 
-    if update.message.photo:
-        file_id = update.message.photo[-1].file_id
+    message = update.message
+    if message.photo:
+        file_id = message.photo[-1].file_id
         media_type = 'photo'
-    elif update.message.video:
-        file_id = update.message.video.file_id
+    elif message.video:
+        file_id = message.video.file_id
         media_type = 'video'
     else:
-        await update.message.reply_text('فقط عکس یا ویدیو قابل قبول است.')
+        await message.reply_text('فقط عکس یا ویدیو قابل قبول است.')
         return WAITING_FOR_MEDIA
 
     context.user_data['file_id'] = file_id
     context.user_data['media_type'] = media_type
 
-    await update.message.reply_text('لطفاً کپشن مورد نظر خود را بنویسید:')
+    await message.reply_text('لطفاً کپشن مورد نظر خود را بنویسید:')
     return WAITING_FOR_CAPTION
 
 async def handle_caption(update: Update, context: ContextTypes.DEFAULT_TYPE):
