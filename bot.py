@@ -138,7 +138,7 @@ def main():
 
     application.add_handler(conv_handler)
 
-    WEBHOOK_URL = 'https://ooooo-fiwm.onrender.com/'  # اصلاح شده
+    WEBHOOK_URL = 'https://final-4oxs.onrender.com'  # اصلاح شده
 
     application.run_webhook(
         listen="0.0.0.0",
