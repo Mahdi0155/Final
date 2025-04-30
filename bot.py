@@ -9,7 +9,7 @@ from datetime import timedelta
 from aiohttp import web
 
 # اطلاعات ربات
-TOKEN = '7413532622:AAH2nxwTR8aaGxsZT27JZohVW_IEg_EbXmI'
+TOKEN = os.getenv('BOT_TOKEN', '7413532622:AAH2nxwTR8aaGxsZT27JZohVW_IEg_EbXmI')  # امنیت بیشتر
 CHANNEL_USERNAME = '@hottof'
 ADMINS = [7827493126, 6387942633, 5459406429, 7189616405]
 
@@ -20,10 +20,8 @@ WAITING_FOR_MEDIA, WAITING_FOR_CAPTION, WAITING_FOR_ACTION, WAITING_FOR_SCHEDULE
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# تعریف ربات
 application = Application.builder().token(TOKEN).build()
 
-# دستورات ربات
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id not in ADMINS:
         await update.message.reply_text('شما دسترسی به این ربات ندارید.')
@@ -124,11 +122,9 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text('لغو شد.', reply_markup=ReplyKeyboardRemove())
     return ConversationHandler.END
 
-# روت برای پینگ UptimeRobot
 async def ping_handler(request):
     return web.Response(text="I'm alive!")
 
-# اجرای اصلی
 def main():
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start)],
@@ -142,11 +138,8 @@ def main():
     )
 
     application.add_handler(conv_handler)
-
-    # افزودن روت پینگ برای UptimeRobot
     application.web_app.router.add_get("/", ping_handler)
 
-    # آدرس وبهوک
     WEBHOOK_URL = 'https://final-4oxs.onrender.com'
 
     application.run_webhook(
