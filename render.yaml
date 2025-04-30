@@ -6,10 +6,10 @@ services:
     startCommand: python bot.py
     envVars:
       - key: BOT_TOKEN
-        value: <توکن ربات>
+        value: 7413532622:AAHCSzCHmbgtMwn5wqJ5S1wCPxSW8ReSTpk
       - key: ADMIN_IDS
-        value: <ایدی عددی ادمین‌ها با کاما جدا>
+        value: 6387942633
       - key: CHANNEL_ID
         value: @hottof
       - key: WEBHOOK_URL
-        value: https://<آدرس دامنه رندر شما>.onrender.com/webhook
+        value: https://final-4oxs.onrender.com.onrender.com/webhook
