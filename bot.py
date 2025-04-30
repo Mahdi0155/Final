@@ -6,6 +6,7 @@ from telegram.ext import (
     ContextTypes, ConversationHandler, CallbackContext
 )
 from datetime import timedelta
+from aiohttp import web
 
 # اطلاعات ربات
 TOKEN = '7413532622:AAH2nxwTR8aaGxsZT27JZohVW_IEg_EbXmI'
@@ -74,7 +75,7 @@ async def handle_action(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
 
     if text == 'ارسال در کانال':
-        await send_to_channel(context)
+        await send_to_channel(context.user_data, context.bot)
         await update.message.reply_text('پیام ارسال شد. لطفاً مدیا بعدی را بفرستید.', reply_markup=ReplyKeyboardRemove())
         return WAITING_FOR_MEDIA
     elif text == 'ارسال در آینده':
@@ -97,16 +98,15 @@ async def handle_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text('فقط عدد وارد کنید.')
         return WAITING_FOR_SCHEDULE
 
-async def send_to_channel(context: ContextTypes.DEFAULT_TYPE):
-    data = context.user_data
+async def send_to_channel(data, bot):
     media_type = data['media_type']
     file_id = data['file_id']
     caption = data['caption']
 
     if media_type == 'photo':
-        await context.bot.send_photo(chat_id=CHANNEL_USERNAME, photo=file_id, caption=caption)
+        await bot.send_photo(chat_id=CHANNEL_USERNAME, photo=file_id, caption=caption)
     elif media_type == 'video':
-        await context.bot.send_video(chat_id=CHANNEL_USERNAME, video=file_id, caption=caption)
+        await bot.send_video(chat_id=CHANNEL_USERNAME, video=file_id, caption=caption)
 
 async def send_scheduled(context: CallbackContext):
     data = context.job.data
@@ -124,6 +124,10 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text('لغو شد.', reply_markup=ReplyKeyboardRemove())
     return ConversationHandler.END
 
+# روت برای پینگ UptimeRobot
+async def ping_handler(request):
+    return web.Response(text="I'm alive!")
+
 # اجرای اصلی
 def main():
     conv_handler = ConversationHandler(
@@ -139,7 +143,11 @@ def main():
 
     application.add_handler(conv_handler)
 
-    WEBHOOK_URL = 'https://final-4oxs.onrender.com'  # آدرس ربات در Render
+    # افزودن روت پینگ برای UptimeRobot
+    application.web_app.router.add_get("/", ping_handler)
+
+    # آدرس وبهوک
+    WEBHOOK_URL = 'https://final-4oxs.onrender.com'
 
     application.run_webhook(
         listen="0.0.0.0",
