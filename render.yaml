@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: hottof-bot
+    env: python
+    buildCommand: ""
+    startCommand: python bot.py
+    envVars:
+      - key: BOT_TOKEN
+        value: <توکن ربات>
+      - key: ADMIN_IDS
+        value: <ایدی عددی ادمین‌ها با کاما جدا>
+      - key: CHANNEL_ID
+        value: @hottof
+      - key: WEBHOOK_URL
+        value: https://<آدرس دامنه رندر شما>.onrender.com/webhook
