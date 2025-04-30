@@ -134,7 +134,7 @@ def main():
     # Webhook setup
     app.run_webhook(
         listen="0.0.0.0",
-        port=8080,
+        port=10000,
         webhook_url=os.environ['WEBHOOK_URL']
     )
 
